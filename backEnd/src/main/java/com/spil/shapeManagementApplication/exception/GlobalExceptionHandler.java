@@ -20,8 +20,8 @@ public class GlobalExceptionHandler {
         ex.getBindingResult().getFieldErrors().forEach(error -> {
             errors.put(error.getField(), error.getDefaultMessage());
         });
-        return ResponseEntity.badRequest().body(
-                new ResponseBean("01", "Validation failed", errors)
+        return ResponseEntity.ok().body(
+                new ResponseBean("03", "Validation errors", errors)
         );
     }
 
@@ -31,7 +31,7 @@ public class GlobalExceptionHandler {
         log.warn("Shape name already Exists: {}", ex.getMessage());
         Map<String, String> error = new HashMap<>();
         error.put("massage", ex.getMessage());
-        return ResponseEntity.badRequest().body(
+        return ResponseEntity.ok().body(
                 new ResponseBean("01", ex.getMessage(), null)
         );
     }
@@ -42,7 +42,7 @@ public class GlobalExceptionHandler {
         log.warn("Shape Id not exists: {}", ex.getMessage());
         Map<String, String> error = new HashMap<>();
         error.put("massage", ex.getMessage());
-        return ResponseEntity.badRequest().body(
+        return ResponseEntity.ok().body(
                 new ResponseBean("01", ex.getMessage(), null)
         );
     }
@@ -52,7 +52,7 @@ public class GlobalExceptionHandler {
         log.error("Unexpected error occurred", ex);
         Map<String, String> error = new HashMap<>();
         error.put("massage", ex.getMessage());
-        return ResponseEntity.internalServerError().body(
+        return ResponseEntity.ok().body(
                 new ResponseBean("01", ex.getMessage(), null)
         );
     }

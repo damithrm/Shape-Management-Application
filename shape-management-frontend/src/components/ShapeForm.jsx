@@ -9,6 +9,7 @@ import {
   Stack,
   Box
 } from '@mui/material';
+// import { useNotification } from '../context/NotificationProvider';
 
 export default function ShapeForm({ onSubmit, editingShape, onCancel }) {
   const [name, setName] = useState('');
@@ -80,6 +81,8 @@ export default function ShapeForm({ onSubmit, editingShape, onCancel }) {
             onChange={e => setType(e.target.value)}
           >
             <MenuItem value="CIRCLE">Circle</MenuItem>
+            <MenuItem value="RECTANGLE">Rectangle</MenuItem>
+            <MenuItem value="TRIANGLE">Triangle</MenuItem>
             <MenuItem value="POLYGON">Polygon</MenuItem>
           </Select>
         </FormControl>
@@ -125,6 +128,7 @@ export default function ShapeForm({ onSubmit, editingShape, onCancel }) {
             value={vertices}
             onChange={e => setVertices(e.target.value)}
             required
+            helperText="Example: 0,0; 10,0; 10,10"
             fullWidth
           />
         )}
