@@ -1,5 +1,5 @@
 ### POST request to create a new Shape
-POST http://localhost:8080/api/shapes
+POST http://localhost:8000/api/shapes
 Content-Type: application/json
 
 {
@@ -9,6 +9,3 @@ Content-Type: application/json
   "centerY": 100,
   "radius": 25
 }
-
-
-

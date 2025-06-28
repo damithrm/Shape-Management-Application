@@ -8,9 +8,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
 @Entity
 @Table(name = "vertices")
 public class Vertex {
@@ -27,7 +27,7 @@ public class Vertex {
 
     private int position;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "shape_id", nullable = false)
     private Shape shape;
 }

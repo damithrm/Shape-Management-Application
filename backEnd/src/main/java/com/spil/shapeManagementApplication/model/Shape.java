@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
+
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -13,10 +14,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Data
+@Entity
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
-@Entity
 @Table(name = "shapes")
 public class Shape {
 
@@ -35,9 +36,9 @@ public class Shape {
 
     private LocalDateTime createdAt = LocalDateTime.now();
 
-    @OneToOne(mappedBy = "shape", cascade = CascadeType.ALL)
-    private CircleDetails circleDetails;
-
-    @OneToMany(mappedBy = "shape", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Vertex> vertices = new ArrayList<>();
+//    @OneToOne(mappedBy = "shape", cascade = CascadeType.ALL)
+//    private CircleDetails circleDetails;
+//
+//    @OneToMany(mappedBy = "shape", cascade = CascadeType.ALL, orphanRemoval = true)
+//    private List<Vertex> vertices = new ArrayList<>();
 }
