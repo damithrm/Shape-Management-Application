@@ -42,7 +42,7 @@ public class ShapeService {
      * @throws ShapeNameAlreadyExistsException if a shape with the same name already exists in the repository
      * @throws HandleGeneralException         if an unexpected error occurs during shape creation
      */
-    @Transactional(rollbackOn = Exception.class)
+//    @Transactional(rollbackOn = Exception.class)
     public Shape createShape(ShapeRequestDTO dto) {
         try {
             if (shapeRepository.existsByName(dto.getName())) {
@@ -186,6 +186,28 @@ public class ShapeService {
         } catch (NoSuchShapeException ex) {
             throw new HandleGeneralException(ex.getMessage());
         }
+    }
+
+    /**
+     * Deletes a shape and its associated details (e.g., circle details or vertices) from the database
+     * using the provided shape ID. If the shape does not exist, an exception is thrown.
+     *
+     * @param id the unique identifier of the shape to be deleted
+     * @throws NoSuchShapeException if the shape with the given ID does not exist in the repository
+     */
+    @Transactional
+    public void deleteShape(Long id) {
+        Optional<Shape> shape = shapeRepository.findById(id);
+        if (!shapeRepository.existsById(id)) {
+            throw new NullPointerException("Shape not found with ID: " + id);
+        }
+
+        // Delete related data first
+        circleRepository.deleteAllByShape_ShapeId(id);
+        vertexRepository.deleteAllByShape_ShapeId(id);
+
+        // Then delete the shape itself
+        shapeRepository.deleteById(id);
     }
 
 }

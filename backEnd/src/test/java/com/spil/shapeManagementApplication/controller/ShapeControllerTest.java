@@ -43,7 +43,7 @@ class ShapeControllerTest {
           "radius": 20
         }
         """;
-
+        // Perform the POST request to create a circle shape
         mockMvc.perform(post("/api/shapes")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(shapeJson))
@@ -63,7 +63,7 @@ class ShapeControllerTest {
       "radius": 15
     }
     """;
-
+        // Create a shape first
         mockMvc.perform(post("/api/shapes")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(shapeJson))
@@ -82,7 +82,6 @@ class ShapeControllerTest {
 
     @Test
     void shouldUpdateShapeSuccessfully() throws Exception {
-        // Step 1: Create the shape first
         String postJson = """
     {
       "name": "ToBeUpdated",
@@ -92,18 +91,16 @@ class ShapeControllerTest {
       "radius": 20
     }
     """;
-
+    // Step 1: Create a shape first
         MvcResult result = mockMvc.perform(post("/api/shapes")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(postJson))
                 .andExpect(status().isCreated())
                 .andReturn();
 
-        // Extract the ID from the response JSON
         String responseBody = result.getResponse().getContentAsString();
         Long shapeId = JsonPath.read(responseBody, "$.content.shapeId");
 
-        // Step 2: Update that shape
         String putJson = """
     {
       "name": "ToBeUpdatedModified",
@@ -113,7 +110,7 @@ class ShapeControllerTest {
       "radius": 25
     }
     """;
-
+        // Step 2: Update the shape
         mockMvc.perform(put("/api/shapes/{id}", shapeId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(putJson))
@@ -121,5 +118,40 @@ class ShapeControllerTest {
                 .andExpect(jsonPath("$.responseCode").value("00"))
                 .andExpect(jsonPath("$.content.name").value("ToBeUpdatedModified"))
                 .andExpect(jsonPath("$.content.type").value("CIRCLE"));
+    }
+
+    @Test
+    void shouldDeleteShapeSuccessfully() throws Exception {
+        // Step 1: Create a shape first
+        String shapeJson = """
+    {
+      "name": "ToBeDeleted",
+      "type": "CIRCLE",
+      "centerX": 60,
+      "centerY": 60,
+      "radius": 10
+    }
+    """;
+
+        MvcResult result = mockMvc.perform(post("/api/shapes")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(shapeJson))
+                .andExpect(status().isCreated())
+                .andReturn();
+
+        //  Extract the shapeId from the response JSON
+        String responseBody = result.getResponse().getContentAsString();
+        Long shapeId = JsonPath.read(responseBody, "$.content.shapeId");
+
+        //  Delete the shape
+        mockMvc.perform(delete("/api/shapes/{id}", shapeId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.responseCode").value("00"))
+                .andExpect(jsonPath("$.responseMsg").value("Shape deleted successfully"));
+
+        //  Ensure it's actually deleted by checking shape list
+        mockMvc.perform(get("/api/shapes"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[?(@.shapeId == %s)]", shapeId).doesNotExist());
     }
 }

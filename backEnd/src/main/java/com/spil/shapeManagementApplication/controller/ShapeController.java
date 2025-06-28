@@ -73,5 +73,15 @@ public class ShapeController {
                 );
     }
 
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ResponseBean> deleteShape(@PathVariable Long id) {
+        log.info("Received request to delete shape with ID: {}", id);
+        shapeService.deleteShape(id);
+        log.info("Shape with ID: {} deleted successfully", id);
+        return ResponseEntity.ok(
+                new ResponseBean("00", "Shape deleted successfully", null)
+        );
+    }
+
 
 }
