@@ -1,5 +1,13 @@
-### GET request to example server
-GET https://examples.http-client.intellij.net/get
-    ?generated-in=IntelliJ IDEA
+### POST request to create a new Shape
+POST http://localhost:8080/api/shapes
+Content-Type: application/json
 
-###
+{
+  "name": "Circle-A",
+  "type": "CIRCLE",
+  "centerX": 100,
+  "centerY": 100,
+  "radius": 25
+}
+
+

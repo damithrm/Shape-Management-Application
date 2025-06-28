@@ -1,4 +1,9 @@
 package com.spil.shapeManagementApplication.repository;
 
-public interface CircleDetailsRepository {
+import com.spil.shapeManagementApplication.model.CircleDetails;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+@Repository
+public interface CircleDetailsRepository extends JpaRepository<CircleDetails, Long> {
 }
