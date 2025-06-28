@@ -12,4 +12,6 @@ public interface VertexRepository extends JpaRepository<Vertex, Long> {
 
 
     List<Vertex> findByShape_ShapeId(Long shape);
+
+    void deleteAllByShape_ShapeId(Long id);
 }

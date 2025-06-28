@@ -36,6 +36,17 @@ public class GlobalExceptionHandler {
         );
     }
 
+    @ExceptionHandler(NoSuchShapeException.class)
+    public ResponseEntity<?> handleNoSuchShapeException(ShapeNameAlreadyExistsException ex) {
+        // Log the exception message
+        log.warn("Shape Id not exists: {}", ex.getMessage());
+        Map<String, String> error = new HashMap<>();
+        error.put("massage", ex.getMessage());
+        return ResponseEntity.badRequest().body(
+                new ResponseBean("01", ex.getMessage(), null)
+        );
+    }
+
     @ExceptionHandler(HandleGeneralException.class)
     public ResponseEntity<ResponseBean> handleGeneralException(Exception ex) {
         log.error("Unexpected error occurred", ex);

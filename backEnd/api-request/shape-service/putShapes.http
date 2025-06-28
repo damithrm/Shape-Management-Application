@@ -1,0 +1,11 @@
+### GET request to example server
+PUT http://localhost:8000/api/shapes/2
+Content-Type: application/json
+
+{
+  "name": "Circle-A",
+  "type": "CIRCLE",
+  "centerX": 100,
+  "centerY": 100,
+  "radius": 25
+}

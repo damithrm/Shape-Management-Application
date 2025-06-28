@@ -53,4 +53,25 @@ public class ShapeController {
                                 .build()
                 );
     }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ResponseBean> updateShape(
+            @PathVariable Long id,
+            @Valid @RequestBody ShapeRequestDTO dto
+    ) {
+        log.info("Received request to update shape with ID: {}", id);
+        Shape updatedShape = shapeService.updateShape(id, dto);
+        log.info("Shape with ID: {} updated successfully", id);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(
+                        ResponseBean.builder()
+                                .responseCode("00")
+                                .responseMessage("Shape updated successfully")
+                                .content(updatedShape)
+                                .build()
+                );
+    }
+
+
 }

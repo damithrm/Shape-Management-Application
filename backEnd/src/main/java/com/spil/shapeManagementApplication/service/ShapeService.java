@@ -4,6 +4,7 @@ import com.spil.shapeManagementApplication.dto.PointDTO;
 import com.spil.shapeManagementApplication.dto.ShapeRequestDTO;
 import com.spil.shapeManagementApplication.dto.ShapeResponseDTO;
 import com.spil.shapeManagementApplication.exception.HandleGeneralException;
+import com.spil.shapeManagementApplication.exception.NoSuchShapeException;
 import com.spil.shapeManagementApplication.exception.ShapeNameAlreadyExistsException;
 import com.spil.shapeManagementApplication.model.CircleDetails;
 import com.spil.shapeManagementApplication.model.Shape;
@@ -48,22 +49,14 @@ public class ShapeService {
                 throw new ShapeNameAlreadyExistsException("Shape name already exists");
             }
 
-//            Shape shape = new Shape();
-//            shape.setName(dto.getName());
-//            shape.setType(dto.getType());
             Shape shape = Shape.builder()
                     .name(dto.getName())
                     .type(dto.getType())
                     .build();
-            //shape.setCreatedAt(System.currentTimeMillis());
             shape = shapeRepository.save(shape);
 
             if (dto.getType() == ShapeType.CIRCLE) {
-//                CircleDetails details = new CircleDetails();
-//                details.setShape(shape);
-//                details.setCenterX(dto.getCenterX());
-//                details.setCenterY(dto.getCenterY());
-//                details.setRadius(dto.getRadius());
+
                 CircleDetails details = CircleDetails.builder()
                         .shape(shape)
                         .centerX(dto.getCenterX())
@@ -76,11 +69,7 @@ public class ShapeService {
                 List<Vertex> vertexList = new ArrayList<>();
                 int pos = 1;
                 for (PointDTO point : dto.getVertices()) {
-//                    Vertex v = new Vertex();
-//                    v.setShape(shape);
-//                    v.setX(point.getX());
-//                    v.setY(point.getY());
-//                    v.setPosition(pos++);
+
                 Vertex v =Vertex.builder()
                         .shape(shape)
                         .x(point.getX())
@@ -139,4 +128,64 @@ public class ShapeService {
             throw new HandleGeneralException(ex.getMessage());
         }
     }
+
+    /**
+     * Updates an existing shape using the provided details. The method ensures that the shape
+     * is valid, updates its properties, and manages associated details based on its type (circle or polygon).
+     * If the shape type changes, old details are removed and new ones are added accordingly.
+     *
+     * @param id the unique identifier of the shape to update
+     * @param dto the data transfer object containing the updated properties of the shape, such as its name, type,
+     *            and additional attributes (e.g., center and radius for circles, or vertices for polygons)
+     * @return the updated Shape entity
+     * @throws NoSuchShapeException if the shape with the given ID does not exist
+     * @throws ShapeNameAlreadyExistsException if the new name provided in the dto already exists for another shape
+     * @throws HandleGeneralException if any unexpected error occurs during the update process
+     */
+    public Shape updateShape(Long id, ShapeRequestDTO dto) {
+        try {
+            Shape shape = shapeRepository.findById(id)
+                    .orElseThrow(() -> new NoSuchShapeException("Shape not found with ID: " + id));
+
+            // Validate name uniqueness (only if changing)
+            if (!shape.getName().equals(dto.getName()) && shapeRepository.existsByName(dto.getName())) {
+                throw new ShapeNameAlreadyExistsException("Shape name already exists: " + dto.getName());
+            }
+
+            shape.setName(dto.getName());
+            shape.setType(dto.getType());
+            shape = shapeRepository.save(shape);
+
+            // Remove old shape details
+            circleRepository.deleteById(id);
+            vertexRepository.deleteAllByShape_ShapeId(id);
+
+            // Add new shape details
+            if (dto.getType() == ShapeType.CIRCLE) {
+                CircleDetails cd = new CircleDetails();
+                cd.setShape(shape);
+                cd.setCenterX(dto.getCenterX());
+                cd.setCenterY(dto.getCenterY());
+                cd.setRadius(dto.getRadius());
+                circleRepository.save(cd);
+            } else {
+                int pos = 1;
+                List<Vertex> vertices = new ArrayList<>();
+                for (PointDTO p : dto.getVertices()) {
+                    Vertex vertex = new Vertex();
+                    vertex.setX(p.getX());
+                    vertex.setY(p.getY());
+                    vertex.setPosition(pos++);
+                    vertex.setShape(shape);
+                    vertices.add(vertex);
+                }
+                vertexRepository.saveAll(vertices);
+            }
+
+            return shape;
+        } catch (NoSuchShapeException ex) {
+            throw new HandleGeneralException(ex.getMessage());
+        }
+    }
+
 }
