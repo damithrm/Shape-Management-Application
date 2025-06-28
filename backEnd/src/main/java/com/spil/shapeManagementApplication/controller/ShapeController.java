@@ -1,11 +1,13 @@
 package com.spil.shapeManagementApplication.controller;
 
+import com.spil.shapeManagementApplication.dto.ResponseBean;
 import com.spil.shapeManagementApplication.dto.ShapeRequestDTO;
 import com.spil.shapeManagementApplication.model.Shape;
 import com.spil.shapeManagementApplication.service.ShapeService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -21,10 +23,12 @@ public class ShapeController {
     private final ShapeService shapeService;
 
     @PostMapping
-    public ResponseEntity<Shape> createShape(@Valid @RequestBody ShapeRequestDTO dto) {
-        log.info("Received request to create a new shape");
-        Shape shape = shapeService.createShape(dto);
-        log.info("Shape created successfully");
-        return ResponseEntity.status(201).body(shape);
+    public ResponseEntity<?> createShape(@Valid @RequestBody ShapeRequestDTO dto) {
+            log.info("Received request to create a new shape");
+            Shape shape = shapeService.createShape(dto);
+            log.info("Shape created successfully");
+            return ResponseEntity.ok(
+                    new ResponseBean("00", "Shape created successfully", shape)
+            );
     }
 }
