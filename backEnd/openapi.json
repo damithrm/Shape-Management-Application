@@ -1,0 +1,220 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "OpenAPI definition",
+    "version": "v0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8000",
+      "description": "Generated server url"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Shape",
+      "description": "APIs for managing shapes"
+    }
+  ],
+  "paths": {
+    "/api/shapes/{id}": {
+      "put": {
+        "tags": ["Shape"],
+        "summary": "Update an existing shape",
+        "description": "Updates the shape with the given ID using the provided details",
+        "operationId": "updateShape",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShapeRequestDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Shape"],
+        "summary": "Delete a shape",
+        "description": "Deletes the shape with the given ID",
+        "operationId": "deleteShape",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/shapes": {
+      "get": {
+        "tags": ["Shape"],
+        "summary": "Get all shapes",
+        "description": "Fetches a list of all shapes",
+        "operationId": "getAllShapes",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Shape"],
+        "summary": "Create a new shape",
+        "description": "Creates a new shape with the provided details",
+        "operationId": "createShape",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShapeRequestDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/shapes/overlaps": {
+      "get": {
+        "tags": ["Shape"],
+        "summary": "Get overlapping shapes",
+        "description": "Fetches IDs of shapes that overlap with each other",
+        "operationId": "getOverlappingShapes",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "integer"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "PointDTO": {
+        "type": "object",
+        "properties": {
+          "x": {
+            "type": "number",
+            "format": "double"
+          },
+          "y": {
+            "type": "number",
+            "format": "double"
+          },
+          "position": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "required": ["x", "y"]
+      },
+      "ShapeRequestDTO": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "type": {
+            "type": "string",
+            "enum": ["CIRCLE", "RECTANGLE", "TRIANGLE", "POLYGON"]
+          },
+          "centerX": {
+            "type": "number",
+            "format": "double"
+          },
+          "centerY": {
+            "type": "number",
+            "format": "double"
+          },
+          "radius": {
+            "type": "number",
+            "format": "double"
+          },
+          "vertices": {
+            "type": "array",
+            "minItems": 3,
+            "items": {
+              "$ref": "#/components/schemas/PointDTO"
+            }
+          }
+        },
+        "required": ["name", "type"]
+      }
+    }
+  }
+}

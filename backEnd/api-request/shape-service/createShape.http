@@ -4,9 +4,11 @@ Content-Type: application/json
 
 
 {
-  "name": "Circle-A4",
-  "type": "CIRCLE",
-  "centerX": 900,
-  "centerY": 900,
-  "radius": 25
+  "name": "Triangle-B2",
+  "type": "TRIANGLE",
+  "vertices": [
+    { "x": 35, "y": 35 },
+    { "x": 45, "y": 55 },
+    { "x": 25, "y": 15 }
+  ]
 }

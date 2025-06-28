@@ -5,6 +5,8 @@ import com.spil.shapeManagementApplication.dto.ShapeRequestDTO;
 import com.spil.shapeManagementApplication.dto.ShapeResponseDTO;
 import com.spil.shapeManagementApplication.model.Shape;
 import com.spil.shapeManagementApplication.service.ShapeService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,7 +18,9 @@ import java.util.List;
 import java.util.Set;
 
 @Slf4j
+@Tag(name = "Shape", description = "APIs for managing shapes")
 @RestController
+@CrossOrigin(origins = "http://localhost:3000")
 @RequestMapping("/api/shapes")
 @RequiredArgsConstructor
 public class ShapeController {
@@ -24,6 +28,7 @@ public class ShapeController {
     private final ShapeService shapeService;
 
     @PostMapping
+    @Operation(summary = "Create a new shape", description = "Creates a new shape with the provided details")
     public ResponseEntity<?> createShape(@Valid @RequestBody ShapeRequestDTO dto) {
         log.info("Received request to create a new shape");
         Shape shape = shapeService.createShape(dto);
@@ -40,6 +45,7 @@ public class ShapeController {
     }
 
     @GetMapping
+    @Operation(summary = "Get all shapes", description = "Fetches a list of all shapes")
     public ResponseEntity<?> getAllShapes() {
         log.info("Received request to get all shapes");
         List<ShapeResponseDTO> dtoList = shapeService.getAllShapes();
@@ -56,6 +62,7 @@ public class ShapeController {
     }
 
     @PutMapping("/{id}")
+    @Operation(summary = "Update an existing shape", description = "Updates the shape with the given ID using the provided details")
     public ResponseEntity<?> updateShape(
             @PathVariable Long id,
             @Valid @RequestBody ShapeRequestDTO dto
@@ -75,6 +82,7 @@ public class ShapeController {
     }
 
     @DeleteMapping("/{id}")
+    @Operation(summary = "Delete a shape", description = "Deletes the shape with the given ID")
     public ResponseEntity<?> deleteShape(@PathVariable Long id) {
         log.info("Received request to delete shape with ID: {}", id);
         shapeService.deleteShape(id);
@@ -91,6 +99,7 @@ public class ShapeController {
     }
 
     @GetMapping("/overlaps")
+    @Operation(summary = "Get overlapping shapes", description = "Fetches IDs of shapes that overlap with each other")
     public ResponseEntity<?> getOverlappingShapes() {
         log.info("Received request to get overlapping shapes");
         Set<Long> overlaps = shapeService.findOverlappingShapeIds();
