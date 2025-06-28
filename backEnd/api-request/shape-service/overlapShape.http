@@ -1,0 +1,3 @@
+### GET request to example server
+GET http://localhost:8000/api/shapes/overlaps
+Accept: application/json

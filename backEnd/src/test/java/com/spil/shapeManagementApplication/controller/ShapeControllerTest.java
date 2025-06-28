@@ -154,4 +154,44 @@ class ShapeControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content[?(@.shapeId == %s)]", shapeId).doesNotExist());
     }
+
+    @Test
+    void shouldDetectOverlappingShapes() throws Exception {
+        String circle1 = """
+    {
+      "name": "CircleA",
+      "type": "CIRCLE",
+      "centerX": 100,
+      "centerY": 100,
+      "radius": 30
+    }
+    """;
+
+        String circle2 = """
+    {
+      "name": "CircleB",
+      "type": "CIRCLE",
+      "centerX": 120,
+      "centerY": 100,
+      "radius": 30
+    }
+    """;
+
+        mockMvc.perform(post("/api/shapes")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(circle1))
+                .andExpect(status().isCreated());
+
+        mockMvc.perform(post("/api/shapes")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(circle2))
+                .andExpect(status().isCreated());
+
+        mockMvc.perform(get("/api/shapes/overlaps")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.responseCode").value("00"))
+                .andExpect(jsonPath("$.content").isArray())
+                .andExpect(jsonPath("$.content.length()").value(2));
+    }
 }

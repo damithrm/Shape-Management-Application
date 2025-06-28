@@ -19,9 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.jpa.repository.support.SimpleJpaRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -142,6 +140,7 @@ public class ShapeService {
      * @throws ShapeNameAlreadyExistsException if the new name provided in the dto already exists for another shape
      * @throws HandleGeneralException if any unexpected error occurs during the update process
      */
+    @Transactional
     public Shape updateShape(Long id, ShapeRequestDTO dto) {
         try {
             Shape shape = shapeRepository.findById(id)
@@ -208,6 +207,105 @@ public class ShapeService {
 
         // Then delete the shape itself
         shapeRepository.deleteById(id);
+    }
+
+
+    /**
+     * Finds and returns the IDs of shapes that are overlapping.
+     * The method iterates through all the shapes fetched from the repository
+     * and determines if any two shapes overlap. If an overlap is detected,
+     * the IDs of the overlapping shapes are added to a set to ensure no duplicates.
+     *
+     * @return a set of IDs of the shapes that are overlapping
+     */
+    public Set<Long> findOverlappingShapeIds() {
+        List<Shape> shapes = shapeRepository.findAll();
+        Set<Long> overlappingIds = new HashSet<>();
+
+        for (int i = 0; i < shapes.size(); i++) {
+            for (int j = i + 1; j < shapes.size(); j++) {
+                Shape s1 = shapes.get(i);
+                Shape s2 = shapes.get(j);
+
+                if (isOverlapping(s1, s2)) {
+                    overlappingIds.add(s1.getShapeId());
+                    overlappingIds.add(s2.getShapeId());
+                }
+            }
+        }
+
+        return overlappingIds;
+    }
+
+
+    private boolean isOverlapping(Shape s1, Shape s2) {
+        if (s1.getType() == ShapeType.CIRCLE && s2.getType() == ShapeType.CIRCLE) {
+            return circleOverlapsCircle(s1, s2);
+        }
+
+        if (s1.getType() == ShapeType.CIRCLE) {
+            return circleOverlapsPolygon(s1, s2);
+        }
+
+        if (s2.getType() == ShapeType.CIRCLE) {
+            return circleOverlapsPolygon(s2, s1);
+        }
+
+        return polygonOverlapsPolygon(s1, s2);
+    }
+
+    private boolean circleOverlapsCircle(Shape s1, Shape s2) {
+        CircleDetails c1 = circleRepository.findById(s1.getShapeId()).orElse(null);
+        CircleDetails c2 = circleRepository.findById(s2.getShapeId()).orElse(null);
+        if (c1 == null || c2 == null) return false;
+
+        double dx = c1.getCenterX() - c2.getCenterX();
+        double dy = c1.getCenterY() - c2.getCenterY();
+        double distance = Math.sqrt(dx * dx + dy * dy);
+
+        return distance < (c1.getRadius() + c2.getRadius());
+    }
+
+    private boolean circleOverlapsPolygon(Shape circleShape, Shape polygonShape) {
+        CircleDetails c = circleRepository.findById(circleShape.getShapeId()).orElse(null);
+        List<Vertex> vertices = vertexRepository.findByShape_ShapeId(polygonShape.getShapeId());
+        if (c == null || vertices.isEmpty()) return false;
+
+        for (Vertex v : vertices) {
+            double dx = c.getCenterX() - v.getX();
+            double dy = c.getCenterY() - v.getY();
+            double distance = Math.sqrt(dx * dx + dy * dy);
+            if (distance < c.getRadius()) return true;
+        }
+
+        return false;
+    }
+
+    private boolean polygonOverlapsPolygon(Shape s1, Shape s2) {
+        List<Vertex> v1 = vertexRepository.findByShape_ShapeId(s1.getShapeId());
+        List<Vertex> v2 = vertexRepository.findByShape_ShapeId(s2.getShapeId());
+
+        if (v1.isEmpty() || v2.isEmpty()) return false;
+
+        double[] bb1 = getBoundingBox(v1);
+        double[] bb2 = getBoundingBox(v2);
+
+        return !(bb1[2] < bb2[0] || bb2[2] < bb1[0] ||
+                bb1[3] < bb2[1] || bb2[3] < bb1[1]);
+    }
+
+    private double[] getBoundingBox(List<Vertex> vertices) {
+        double minX = Double.MAX_VALUE, minY = Double.MAX_VALUE;
+        double maxX = Double.MIN_VALUE, maxY = Double.MIN_VALUE;
+
+        for (Vertex v : vertices) {
+            minX = Math.min(minX, v.getX());
+            minY = Math.min(minY, v.getY());
+            maxX = Math.max(maxX, v.getX());
+            maxY = Math.max(maxY, v.getY());
+        }
+
+        return new double[]{minX, minY, maxX, maxY};
     }
 
 }

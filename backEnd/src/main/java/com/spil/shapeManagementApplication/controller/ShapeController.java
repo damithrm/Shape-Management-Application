@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Set;
 
 @Slf4j
 @RestController
@@ -55,7 +56,7 @@ public class ShapeController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ResponseBean> updateShape(
+    public ResponseEntity<?> updateShape(
             @PathVariable Long id,
             @Valid @RequestBody ShapeRequestDTO dto
     ) {
@@ -74,14 +75,37 @@ public class ShapeController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ResponseBean> deleteShape(@PathVariable Long id) {
+    public ResponseEntity<?> deleteShape(@PathVariable Long id) {
         log.info("Received request to delete shape with ID: {}", id);
         shapeService.deleteShape(id);
         log.info("Shape with ID: {} deleted successfully", id);
-        return ResponseEntity.ok(
-                new ResponseBean("00", "Shape deleted successfully", null)
-        );
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(
+                        ResponseBean.builder()
+                                .responseCode("00")
+                                .responseMessage("Shape updated successfully")
+                                .content(null)
+                                .build()
+                );
     }
+
+    @GetMapping("/overlaps")
+    public ResponseEntity<?> getOverlappingShapes() {
+        log.info("Received request to get overlapping shapes");
+        Set<Long> overlaps = shapeService.findOverlappingShapeIds();
+        log.info("Shapes overlaps retrieved successfully");
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(
+                        ResponseBean.builder()
+                                .responseCode("00")
+                                .responseMessage("Overlaps Checked Successfully")
+                                .content(overlaps)
+                                .build()
+                );
+    }
+
 
 
 }

@@ -3,11 +3,10 @@ POST http://localhost:8000/api/shapes
 Content-Type: application/json
 
 
-
 {
-  "name": "Circle-A",
+  "name": "Circle-A4",
   "type": "CIRCLE",
-  "centerX": 100,
-  "centerY": 100,
+  "centerX": 900,
+  "centerY": 900,
   "radius": 25
 }
