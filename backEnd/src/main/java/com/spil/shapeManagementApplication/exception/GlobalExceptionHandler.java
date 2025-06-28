@@ -1,6 +1,7 @@
 package com.spil.shapeManagementApplication.exception;
 
 import com.spil.shapeManagementApplication.dto.ResponseBean;
+import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -25,6 +26,18 @@ public class GlobalExceptionHandler {
         );
     }
 
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<?> handleConstraintViolationException(ConstraintViolationException ex) {
+        Map<String, String> errors = new HashMap<>();
+        log.error("Constraint violation occurred: {}", ex.getMessage());
+//        ex.getBindingResult().getFieldErrors().forEach(error -> {
+//            errors.put(error.getField(), error.getDefaultMessage());
+//        });
+        return ResponseEntity.ok().body(
+                new ResponseBean("03", "Validation errors", ex.toString())
+        );
+    }
+
     @ExceptionHandler(ShapeNameAlreadyExistsException.class)
     public ResponseEntity<?> handleEmailAlreadyExistsException(ShapeNameAlreadyExistsException ex) {
         // Log the exception message
@@ -42,7 +55,7 @@ public class GlobalExceptionHandler {
         log.warn("Shape Id not exists: {}", ex.getMessage());
         Map<String, String> error = new HashMap<>();
         error.put("massage", ex.getMessage());
-        return ResponseEntity.ok().body(
+        return ResponseEntity.status(404).body(
                 new ResponseBean("01", ex.getMessage(), null)
         );
     }
@@ -52,8 +65,8 @@ public class GlobalExceptionHandler {
         log.error("Unexpected error occurred", ex);
         Map<String, String> error = new HashMap<>();
         error.put("massage", ex.getMessage());
-        return ResponseEntity.ok().body(
-                new ResponseBean("01", ex.getMessage(), null)
+        return ResponseEntity.badRequest().body(
+                new ResponseBean("01", "Invalid request", null)
         );
     }
 }

@@ -40,7 +40,7 @@ public class ShapeService {
      * @throws ShapeNameAlreadyExistsException if a shape with the same name already exists in the repository
      * @throws HandleGeneralException         if an unexpected error occurs during shape creation
      */
-//    @Transactional(rollbackOn = Exception.class)
+    @Transactional(rollbackOn = Exception.class)
     public Shape createShape(ShapeRequestDTO dto) {
         try {
             if (shapeRepository.existsByName(dto.getName())) {
@@ -80,6 +80,8 @@ public class ShapeService {
                 vertexRepository.saveAll(vertexList);
             }
             return shape;
+        }catch (ShapeNameAlreadyExistsException ex) {
+            throw ex;
         } catch (Exception ex) {
             throw new HandleGeneralException(ex.getMessage());
         }
@@ -255,10 +257,11 @@ public class ShapeService {
     }
 
     private boolean circleOverlapsCircle(Shape s1, Shape s2) {
-        CircleDetails c1 = circleRepository.findById(s1.getShapeId()).orElse(null);
-        CircleDetails c2 = circleRepository.findById(s2.getShapeId()).orElse(null);
-        if (c1 == null || c2 == null) return false;
-
+        CircleDetails c1 = circleRepository.findByShape_ShapeId(s1.getShapeId()).orElse(null);
+        CircleDetails c2 = circleRepository.findByShape_ShapeId(s2.getShapeId()).orElse(null);
+        if (c1 == null || c2 == null) {
+            throw new HandleGeneralException("One or both circles not found");
+        }
         double dx = c1.getCenterX() - c2.getCenterX();
         double dy = c1.getCenterY() - c2.getCenterY();
         double distance = Math.sqrt(dx * dx + dy * dy);
@@ -267,10 +270,11 @@ public class ShapeService {
     }
 
     private boolean circleOverlapsPolygon(Shape circleShape, Shape polygonShape) {
-        CircleDetails c = circleRepository.findById(circleShape.getShapeId()).orElse(null);
+        CircleDetails c = circleRepository.findByShape_ShapeId(circleShape.getShapeId()).orElse(null);
         List<Vertex> vertices = vertexRepository.findByShape_ShapeId(polygonShape.getShapeId());
-        if (c == null || vertices.isEmpty()) return false;
-
+        if (c == null || vertices.isEmpty()) {
+            throw new HandleGeneralException("One or both circles not found");
+        }
         for (Vertex v : vertices) {
             double dx = c.getCenterX() - v.getX();
             double dy = c.getCenterY() - v.getY();
@@ -285,7 +289,9 @@ public class ShapeService {
         List<Vertex> v1 = vertexRepository.findByShape_ShapeId(s1.getShapeId());
         List<Vertex> v2 = vertexRepository.findByShape_ShapeId(s2.getShapeId());
 
-        if (v1.isEmpty() || v2.isEmpty()) return false;
+        if (v1.isEmpty() || v2.isEmpty()) {
+            throw new HandleGeneralException("One or both circles not found");
+        }
 
         double[] bb1 = getBoundingBox(v1);
         double[] bb2 = getBoundingBox(v2);

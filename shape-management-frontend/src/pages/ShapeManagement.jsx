@@ -13,11 +13,18 @@ import Grid from "@mui/material/Grid";
 import Paper from "@mui/material/Paper";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import Dialog from "@mui/material/Dialog";
+import DialogActions from "@mui/material/DialogActions";
+import DialogContent from "@mui/material/DialogContent";
+import DialogTitle from "@mui/material/DialogTitle";
+import AddIcon from "@mui/icons-material/Add";
 import { useNotification } from "../context/NotificationProvider";
 
 export default function ShapeManagement() {
   const [shapes, setShapes] = useState([]);
   const [editingShape, setEditingShape] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const { showSuccess, showWarning, showInfo, showError } = useNotification();
 
   const fetchShapes = async () => {
@@ -28,6 +35,16 @@ export default function ShapeManagement() {
   useEffect(() => {
     fetchShapes();
   }, []);
+
+  const handleOpenModal = (shape = null) => {
+    setEditingShape(shape);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setEditingShape(null);
+    setIsModalOpen(false);
+  };
 
   const handleSubmit = async (shape) => {
     if (editingShape) {
@@ -40,12 +57,12 @@ export default function ShapeManagement() {
         showSuccess(result?.data?.responseMessage, {
           autoHideDuration: 2000,
         });
+        handleCloseModal();
       } else {
         showError(result?.data?.responseMessage, {
           autoHideDuration: 2000,
         });
       }
-      setEditingShape(null);
     } else {
       const result = await createShape(shape);
       if (result?.data?.responseCode === "03") {
@@ -56,6 +73,7 @@ export default function ShapeManagement() {
         showSuccess(result?.data?.responseMessage, {
           autoHideDuration: 2000,
         });
+        handleCloseModal();
       } else {
         showError(result?.data?.responseMessage, {
           autoHideDuration: 2000,
@@ -66,7 +84,20 @@ export default function ShapeManagement() {
   };
 
   const handleDelete = async (id) => {
-    await deleteShape(id);
+    const result = await deleteShape(id);
+    if (result?.data?.responseCode === "03") {
+      showWarning(result?.data?.responseMessage, {
+        autoHideDuration: 2000,
+      });
+    } else if (result?.data?.responseCode === "00") {
+      showSuccess(result?.data?.responseMessage, {
+        autoHideDuration: 2000,
+      });
+    } else {
+      showError(result?.data?.responseMessage, {
+        autoHideDuration: 2000,
+      });
+    }
     fetchShapes();
   };
 
@@ -76,28 +107,17 @@ export default function ShapeManagement() {
         Shape Management
       </Typography>
 
-      {/* <Grid
-        container
-        spacing={4}
-        justifyContent="center"
-        alignItems="stretch"
-      > */}
-      {/* Form Section */}
-      {/* <Grid item xs={12} md={6}> */}
-      <Paper elevation={4} sx={{ p: 4, height: "100%" }}>
-        <Typography variant="h6" gutterBottom>
-          {editingShape ? "Edit Shape" : "Create New Shape"}
-        </Typography>
-        <ShapeForm
-          onSubmit={handleSubmit}
-          editingShape={editingShape}
-          onCancel={() => setEditingShape(null)}
-        />
-      </Paper>
-      {/* </Grid> */}
+      <Box sx={{ mb: 3, display: 'flex', justifyContent: 'flex-end' }}>
+        <Button 
+          variant="contained" 
+          color="primary" 
+          startIcon={<AddIcon />}
+          onClick={() => handleOpenModal()}
+        >
+          Add New Shape
+        </Button>
+      </Box>
 
-      {/* List Section */}
-      {/* <Grid item xs={12} md={6}> */}
       <Paper elevation={4} sx={{ p: 4, height: "100%" }}>
         <Typography variant="h6" gutterBottom>
           Shapes List
@@ -109,13 +129,35 @@ export default function ShapeManagement() {
         ) : (
           <ShapeList
             shapes={shapes}
-            onEdit={setEditingShape}
+            onEdit={handleOpenModal}
             onDelete={handleDelete}
           />
         )}
       </Paper>
-      {/* </Grid> */}
-      {/* </Grid> */}
+
+      {/* Shape Form Modal */}
+      <Dialog 
+        open={isModalOpen} 
+        onClose={handleCloseModal}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>
+          {editingShape ? "Edit Shape" : "Create New Shape"}
+        </DialogTitle>
+        <DialogContent dividers>
+          <ShapeForm
+            onSubmit={handleSubmit}
+            editingShape={editingShape}
+            onCancel={handleCloseModal}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseModal} color="secondary">
+            Cancel
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 }
