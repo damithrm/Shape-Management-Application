@@ -2,6 +2,7 @@ package com.spil.shapeManagementApplication.controller;
 
 import com.spil.shapeManagementApplication.dto.ResponseBean;
 import com.spil.shapeManagementApplication.dto.ShapeRequestDTO;
+import com.spil.shapeManagementApplication.dto.ShapeResponseDTO;
 import com.spil.shapeManagementApplication.model.Shape;
 import com.spil.shapeManagementApplication.service.ShapeService;
 import jakarta.validation.Valid;
@@ -26,18 +27,30 @@ public class ShapeController {
         log.info("Received request to create a new shape");
         Shape shape = shapeService.createShape(dto);
         log.info("Shape created successfully");
-        return ResponseEntity.ok(
-                new ResponseBean("00", "Shape created successfully", shape)
-        );
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(
+                        ResponseBean.builder()
+                                .responseCode("00")
+                                .responseMessage("Shape created successfully")
+                                .content(shape)
+                                .build()
+                );
     }
 
     @GetMapping
     public ResponseEntity<?> getAllShapes() {
         log.info("Received request to get all shapes");
-        List<Shape> shapes = shapeService.getAllShapes();
+        List<ShapeResponseDTO> dtoList = shapeService.getAllShapes();
         log.info("Shapes retrieved successfully");
-        return ResponseEntity.ok(
-                new ResponseBean("00", "Shape list fetched successfully", shapes)
-        );
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(
+                        ResponseBean.builder()
+                                .responseCode("00")
+                                .responseMessage("Shape list fetched successfully")
+                                .content(dtoList)
+                                .build()
+                );
     }
 }

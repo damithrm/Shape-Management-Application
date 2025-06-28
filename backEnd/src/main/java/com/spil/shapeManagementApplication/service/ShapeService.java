@@ -2,6 +2,7 @@ package com.spil.shapeManagementApplication.service;
 
 import com.spil.shapeManagementApplication.dto.PointDTO;
 import com.spil.shapeManagementApplication.dto.ShapeRequestDTO;
+import com.spil.shapeManagementApplication.dto.ShapeResponseDTO;
 import com.spil.shapeManagementApplication.exception.HandleGeneralException;
 import com.spil.shapeManagementApplication.exception.ShapeNameAlreadyExistsException;
 import com.spil.shapeManagementApplication.model.CircleDetails;
@@ -14,10 +15,12 @@ import com.spil.shapeManagementApplication.repository.VertexRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.jpa.repository.support.SimpleJpaRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -101,14 +104,39 @@ public class ShapeService {
      * @return a list of Shape objects representing all the shapes in the repository
      * @throws HandleGeneralException if an unexpected error occurs during the retrieval process
      */
-    public List<Shape> getAllShapes() {
-        List<Shape> shapes = null;
+    public List<ShapeResponseDTO> getAllShapes() {
         try {
-            shapes = shapeRepository.findAll();
+            List<Shape> shapes = shapeRepository.findAll();
+            List<ShapeResponseDTO> result = new ArrayList<>();
+
+            for (Shape shape : shapes) {
+                ShapeResponseDTO dto = new ShapeResponseDTO();
+                dto.setShapeId(shape.getShapeId());
+                dto.setName(shape.getName());
+                dto.setType(shape.getType());
+
+                // Now fetch details manually
+                if (shape.getType() == ShapeType.CIRCLE) {
+                    Optional<CircleDetails> circleDetails = circleRepository.findByShape_ShapeId(shape.getShapeId());
+                    if (circleDetails.isPresent()) {
+                        CircleDetails cd = circleDetails.get();
+                        dto.setCenterX(cd.getCenterX());
+                        dto.setCenterY(cd.getCenterY());
+                        dto.setRadius(cd.getRadius());
+                    }
+                } else {
+                    List<Vertex> vertices = vertexRepository.findByShape_ShapeId(shape.getShapeId());
+                    dto.setVertices(vertices.stream()
+                            .map(v -> new PointDTO(v.getX(), v.getY() , v.getPosition()))
+                            .toList());
+                }
+
+                result.add(dto);
+            }
+
+            return result;
         } catch (Exception ex) {
             throw new HandleGeneralException(ex.getMessage());
         }
-
-        return shapes;
     }
 }

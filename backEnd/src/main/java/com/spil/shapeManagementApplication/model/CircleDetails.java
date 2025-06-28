@@ -18,7 +18,7 @@ public class CircleDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long shapeId;
+    private Long circleId;
 
     @Positive
     @NotNull

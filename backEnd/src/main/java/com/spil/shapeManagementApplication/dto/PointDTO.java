@@ -2,10 +2,12 @@ package com.spil.shapeManagementApplication.dto;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
 public class PointDTO {
@@ -13,4 +15,6 @@ public class PointDTO {
     private Double x;
     @NotNull
     private Double y;
+
+    private Integer position;
 }
