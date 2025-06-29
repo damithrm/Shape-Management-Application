@@ -1,5 +1,6 @@
 ### GET request to example server
-PUT http://localhost:8000/api/shapes/2
+PUT http://localhost:8000/api/shapes/5
+Authorization: Basic YWRtaW46YWRtaW4=
 Content-Type: application/json
 
 {

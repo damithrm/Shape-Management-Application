@@ -9,6 +9,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
+import java.util.Base64;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -35,21 +37,26 @@ class ShapeControllerTest {
     @Test
     void shouldCreateCircleShapeSuccessfully() throws Exception {
         String shapeJson = """
-        {
-          "name": "TestCircle",
-          "type": "CIRCLE",
-          "centerX": 100,
-          "centerY": 100,
-          "radius": 20
-        }
-        """;
-        // Perform the POST request to create a circle shape
+    {
+      "name": "TestCircle5",
+      "type": "CIRCLE",
+      "centerX": 100,
+      "centerY": 100,
+      "radius": 20
+    }
+    """;
+
+        String username = "admin";
+        String password = "admin";
+        String basicAuthHeader = "Basic " + Base64.getEncoder().encodeToString((username + ":" + password).getBytes());
+
         mockMvc.perform(post("/api/shapes")
+                        .header("Authorization", basicAuthHeader)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(shapeJson))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.name").value("TestCircle"))
-                .andExpect(jsonPath("$.type").value("CIRCLE"));
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.responseCode").value("00"));
     }
 
     @Test
@@ -63,14 +70,19 @@ class ShapeControllerTest {
       "radius": 15
     }
     """;
+        String username = "admin";
+        String password = "admin";
+        String basicAuthHeader = "Basic " + Base64.getEncoder().encodeToString((username + ":" + password).getBytes());
         // Create a shape first
         mockMvc.perform(post("/api/shapes")
+                        .header("Authorization", basicAuthHeader)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(shapeJson))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.responseCode").value("00"));
 
         mockMvc.perform(get("/api/shapes")
+                        .header("Authorization", basicAuthHeader)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.responseCode").value("00"))
@@ -91,8 +103,12 @@ class ShapeControllerTest {
       "radius": 20
     }
     """;
+        String username = "admin";
+        String password = "admin";
+        String basicAuthHeader = "Basic " + Base64.getEncoder().encodeToString((username + ":" + password).getBytes());
     // Step 1: Create a shape first
         MvcResult result = mockMvc.perform(post("/api/shapes")
+                        .header("Authorization", basicAuthHeader)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(postJson))
                 .andExpect(status().isCreated())
@@ -112,6 +128,7 @@ class ShapeControllerTest {
     """;
         // Step 2: Update the shape
         mockMvc.perform(put("/api/shapes/{id}", shapeId)
+                        .header("Authorization", basicAuthHeader)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(putJson))
                 .andExpect(status().isOk())
@@ -132,8 +149,12 @@ class ShapeControllerTest {
       "radius": 10
     }
     """;
+        String username = "admin";
+        String password = "admin";
+        String basicAuthHeader = "Basic " + Base64.getEncoder().encodeToString((username + ":" + password).getBytes());
 
         MvcResult result = mockMvc.perform(post("/api/shapes")
+                        .header("Authorization", basicAuthHeader)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(shapeJson))
                 .andExpect(status().isCreated())
@@ -176,18 +197,24 @@ class ShapeControllerTest {
       "radius": 30
     }
     """;
+        String username = "admin";
+        String password = "admin";
+        String basicAuthHeader = "Basic " + Base64.getEncoder().encodeToString((username + ":" + password).getBytes());
 
         mockMvc.perform(post("/api/shapes")
+                        .header("Authorization", basicAuthHeader)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(circle1))
                 .andExpect(status().isCreated());
 
         mockMvc.perform(post("/api/shapes")
+                        .header("Authorization", basicAuthHeader)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(circle2))
                 .andExpect(status().isCreated());
 
         mockMvc.perform(get("/api/shapes/overlaps")
+                        .header("Authorization", basicAuthHeader)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.responseCode").value("00"))

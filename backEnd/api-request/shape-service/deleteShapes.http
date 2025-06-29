@@ -1,3 +1,4 @@
 ### DELTE request to example server
 DELETE http://localhost:8000/api/shapes/3
+Authorization: Basic YWRtaW46YWRtaW4=
 Accept: application/json

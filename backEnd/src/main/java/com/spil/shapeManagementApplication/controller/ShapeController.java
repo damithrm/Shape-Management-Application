@@ -92,7 +92,7 @@ public class ShapeController {
                 .body(
                         ResponseBean.builder()
                                 .responseCode("00")
-                                .responseMessage("Shape updated successfully")
+                                .responseMessage("Shape Deleted Successfully")
                                 .content(null)
                                 .build()
                 );
