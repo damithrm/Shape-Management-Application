@@ -9,7 +9,6 @@ import {
 } from "../services/shapeApi";
 
 import Container from "@mui/material/Container";
-import Grid from "@mui/material/Grid";
 import Paper from "@mui/material/Paper";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
@@ -19,22 +18,34 @@ import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogTitle from "@mui/material/DialogTitle";
 import AddIcon from "@mui/icons-material/Add";
+
 import { useNotification } from "../context/NotificationProvider";
+import { useAuth } from "../context/AuthContext"; // ✅ authentication context
 
 export default function ShapeManagement() {
   const [shapes, setShapes] = useState([]);
   const [editingShape, setEditingShape] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const { showSuccess, showWarning, showInfo, showError } = useNotification();
 
-  const fetchShapes = async () => {
-    const res = await getShapes();
-    setShapes(res.data.content);
-  };
+  const { showSuccess, showWarning, showError } = useNotification();
+  const { setAuth, getAuthHeader } = useAuth();
 
+  // Prompt user for credentials once
   useEffect(() => {
+    const username = window.prompt("Enter username:");
+    const password = window.prompt("Enter password:");
+    setAuth(username, password);
     fetchShapes();
   }, []);
+
+  const fetchShapes = async () => {
+    try {
+      const res = await getShapes();
+      setShapes(res.data.content || []);
+    } catch (e) {
+      showError("Failed to fetch shapes");
+    }
+  };
 
   const handleOpenModal = (shape = null) => {
     setEditingShape(shape);
@@ -47,58 +58,40 @@ export default function ShapeManagement() {
   };
 
   const handleSubmit = async (shape) => {
-    if (editingShape) {
-      const result = await updateShape(editingShape.shapeId, shape);
-      if (result?.data?.responseCode === "03") {
-        showWarning(result?.data?.responseMessage, {
-          autoHideDuration: 2000,
-        });
-      } else if (result?.data?.responseCode === "00") {
-        showSuccess(result?.data?.responseMessage, {
-          autoHideDuration: 2000,
-        });
-        handleCloseModal();
+    const auth = { headers: { Authorization: getAuthHeader() } };
+    try {
+      let result;
+      if (editingShape) {
+        result = await updateShape(editingShape.shapeId, shape, auth);
       } else {
-        showError(result?.data?.responseMessage, {
-          autoHideDuration: 2000,
-        });
+        result = await createShape(shape, auth);
       }
-    } else {
-      const result = await createShape(shape);
-      if (result?.data?.responseCode === "03") {
-        showWarning(result?.data?.responseMessage, {
-          autoHideDuration: 2000,
-        });
-      } else if (result?.data?.responseCode === "00") {
-        showSuccess(result?.data?.responseMessage, {
-          autoHideDuration: 2000,
-        });
+
+      if (result?.data?.responseCode === "00") {
+        showSuccess(result.data.responseMessage || "Success!");
         handleCloseModal();
+        fetchShapes();
       } else {
-        showError(result?.data?.responseMessage, {
-          autoHideDuration: 2000,
-        });
+        showWarning(result?.data?.responseMessage || "Failed to process shape");
       }
+    } catch (err) {
+      showError("Error submitting shape. Please check your credentials or data.");
     }
-    fetchShapes();
   };
 
   const handleDelete = async (id) => {
-    const result = await deleteShape(id);
-    if (result?.data?.responseCode === "03") {
-      showWarning(result?.data?.responseMessage, {
-        autoHideDuration: 2000,
-      });
-    } else if (result?.data?.responseCode === "00") {
-      showSuccess(result?.data?.responseMessage, {
-        autoHideDuration: 2000,
-      });
-    } else {
-      showError(result?.data?.responseMessage, {
-        autoHideDuration: 2000,
-      });
+    const auth = { headers: { Authorization: getAuthHeader() } };
+    try {
+      const result = await deleteShape(id, auth);
+      if (result?.data?.responseCode === "00") {
+        showSuccess("Shape deleted successfully");
+        fetchShapes();
+      } else {
+        showWarning(result?.data?.responseMessage || "Delete failed");
+      }
+    } catch (err) {
+      showError("Error deleting shape. Please check your credentials.");
     }
-    fetchShapes();
   };
 
   return (
@@ -107,10 +100,10 @@ export default function ShapeManagement() {
         Shape Management
       </Typography>
 
-      <Box sx={{ mb: 3, display: 'flex', justifyContent: 'flex-end' }}>
-        <Button 
-          variant="contained" 
-          color="primary" 
+      <Box sx={{ mb: 3, display: "flex", justifyContent: "flex-end" }}>
+        <Button
+          variant="contained"
+          color="primary"
           startIcon={<AddIcon />}
           onClick={() => handleOpenModal()}
         >
@@ -118,10 +111,11 @@ export default function ShapeManagement() {
         </Button>
       </Box>
 
-      <Paper elevation={4} sx={{ p: 4, height: "100%" }}>
+      <Paper elevation={4} sx={{ p: 4 }}>
         <Typography variant="h6" gutterBottom>
           Shapes List
         </Typography>
+
         {shapes.length === 0 ? (
           <Box sx={{ color: "gray", textAlign: "center", py: 2 }}>
             No shapes yet. Add some!
@@ -136,15 +130,8 @@ export default function ShapeManagement() {
       </Paper>
 
       {/* Shape Form Modal */}
-      <Dialog 
-        open={isModalOpen} 
-        onClose={handleCloseModal}
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogTitle>
-          {editingShape ? "Edit Shape" : "Create New Shape"}
-        </DialogTitle>
+      <Dialog open={isModalOpen} onClose={handleCloseModal} maxWidth="sm" fullWidth>
+        <DialogTitle>{editingShape ? "Edit Shape" : "Create New Shape"}</DialogTitle>
         <DialogContent dividers>
           <ShapeForm
             onSubmit={handleSubmit}

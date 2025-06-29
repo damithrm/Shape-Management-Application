@@ -5,7 +5,9 @@ const api = axios.create({
 });
 
 export const getShapes = () => api.get('');
-export const createShape = (shape) => api.post('', shape);
-export const updateShape = (id, shape) => api.put(`/${id}`, shape);
-export const deleteShape = (id) => api.delete(`/${id}`);
 export const getOverlaps = () => api.get('/overlaps');
+
+// Include auth headers manually for secure endpoints
+export const createShape = (shape, config) => api.post('', shape, config);
+export const updateShape = (id, shape, config) => api.put(`/${id}`, shape, config);
+export const deleteShape = (id, config) => api.delete(`/${id}`, config);

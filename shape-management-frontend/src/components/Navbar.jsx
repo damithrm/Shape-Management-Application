@@ -12,8 +12,8 @@ import MenuItem from '@mui/material/MenuItem';
 import { Link } from 'react-router-dom';
 
 const pages = [
-  { name: 'Manage Shapes', path: '/' },
-  { name: 'Draw Shapes', path: '/drawing' }
+  { name: 'Manage Shapes', path: '/manage-shapes' },
+  { name: 'Draw Shapes', path: '/' }
 ];
 
 function Navbar() {

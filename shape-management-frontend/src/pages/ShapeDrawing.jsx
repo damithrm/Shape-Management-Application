@@ -24,7 +24,7 @@ export default function ShapeDrawing() {
   return (
     <Box
       sx={{
-        height: 'calc(100vh - 64px)', // minus navbar height if AppBar is 64px
+        height: 'calc(100vh - 64px)', 
         display: 'flex',
         flexDirection: 'column',
       }}
